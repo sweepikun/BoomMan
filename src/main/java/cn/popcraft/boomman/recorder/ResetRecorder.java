@@ -1,6 +1,7 @@
 package cn.popcraft.boomman.recorder;
 
 import cn.popcraft.boomman.BoomMan;
+import cn.popcraft.boomman.config.ConfigManager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,36 +11,82 @@ import java.util.logging.Level;
 public class ResetRecorder {
 
     private final BoomMan plugin;
+    private final ConfigManager config;
     private Connection connection;
-
-    private static final String CREATE_TABLE_SQL = 
-        "CREATE TABLE IF NOT EXISTS reset_records (" +
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        "world_name VARCHAR(64) NOT NULL, " +
-        "chunk_x INTEGER NOT NULL, " +
-        "chunk_z INTEGER NOT NULL, " +
-        "reset_time BIGINT NOT NULL, " +
-        "reason TEXT, " +
-        "is_restored BOOLEAN DEFAULT FALSE, " +
-        "restore_time BIGINT" +
-        ")";
+    private boolean useMySQL;
 
     public ResetRecorder(BoomMan plugin) {
         this.plugin = plugin;
+        this.config = plugin.getConfigManager();
     }
 
     public void initialize() {
+        this.useMySQL = "mysql".equalsIgnoreCase(config.getDatabaseType());
+        
         try {
-            String dbPath = plugin.getDataFolder().getAbsolutePath() + "/records.db";
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-            
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute(CREATE_TABLE_SQL);
+            if (useMySQL) {
+                initializeMySQL();
+            } else {
+                initializeSQLite();
             }
             
-            plugin.getLogger().info("重置记录数据库初始化成功!");
+            createTable();
+            plugin.getLogger().info("重置记录数据库初始化成功! 使用: " + (useMySQL ? "MySQL" : "SQLite"));
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "初始化数据库时发生错误", e);
+        }
+    }
+
+    private void initializeMySQL() throws SQLException {
+        String url = String.format("jdbc:mysql://%s:%d/%s?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC",
+            config.getDbHost(),
+            config.getDbPort(),
+            config.getDbName()
+        );
+        
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            plugin.getLogger().warning("MySQL驱动未找到，尝试使用内置驱动...");
+        }
+        
+        connection = DriverManager.getConnection(url, config.getDbUsername(), config.getDbPassword());
+    }
+
+    private void initializeSQLite() throws SQLException {
+        String dbPath = plugin.getDataFolder().getAbsolutePath() + "/records.db";
+        connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    }
+
+    private void createTable() throws SQLException {
+        String sql;
+        if (useMySQL) {
+            sql = "CREATE TABLE IF NOT EXISTS reset_records (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "world_name VARCHAR(64) NOT NULL, " +
+                "chunk_x INT NOT NULL, " +
+                "chunk_z INT NOT NULL, " +
+                "reset_time BIGINT NOT NULL, " +
+                "reason TEXT, " +
+                "is_restored BOOLEAN DEFAULT FALSE, " +
+                "restore_time BIGINT, " +
+                "INDEX idx_world_chunk (world_name, chunk_x, chunk_z)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS reset_records (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "world_name VARCHAR(64) NOT NULL, " +
+                "chunk_x INTEGER NOT NULL, " +
+                "chunk_z INTEGER NOT NULL, " +
+                "reset_time BIGINT NOT NULL, " +
+                "reason TEXT, " +
+                "is_restored BOOLEAN DEFAULT FALSE, " +
+                "restore_time BIGINT" +
+                ")";
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
         }
     }
 

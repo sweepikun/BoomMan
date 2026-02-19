@@ -24,6 +24,12 @@ public class ConfigManager {
     private boolean autoSnapshot;
     private int restoreTimeout;
     private boolean bStatsEnabled;
+    private String databaseType;
+    private String dbHost;
+    private int dbPort;
+    private String dbName;
+    private String dbUsername;
+    private String dbPassword;
 
     public ConfigManager(BoomMan plugin) {
         this.plugin = plugin;
@@ -48,6 +54,13 @@ public class ConfigManager {
         this.autoSnapshot = config.getBoolean("coreprotect.auto-snapshot", true);
         this.restoreTimeout = config.getInt("coreprotect.restore-timeout", 300);
         this.bStatsEnabled = config.getBoolean("bstats.enabled", true);
+        
+        this.databaseType = config.getString("database.type", "sqlite");
+        this.dbHost = config.getString("database.host", "localhost");
+        this.dbPort = config.getInt("database.port", 3306);
+        this.dbName = config.getString("database.name", "boomman");
+        this.dbUsername = config.getString("database.username", "root");
+        this.dbPassword = config.getString("database.password", "");
     }
 
     public FileConfiguration getConfig() {
@@ -104,6 +117,30 @@ public class ConfigManager {
 
     public boolean isBStatsEnabled() {
         return bStatsEnabled;
+    }
+
+    public String getDatabaseType() {
+        return databaseType;
+    }
+
+    public String getDbHost() {
+        return dbHost;
+    }
+
+    public int getDbPort() {
+        return dbPort;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public String getDbUsername() {
+        return dbUsername;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
     }
 
     public void reloadConfig() {

@@ -43,3 +43,14 @@ coreprotect:
 bstats:
   # 是否启用匿名统计 (帮助开发者改进插件)
   enabled: true
+
+# 数据库设置
+database:
+  # 数据库类型: sqlite 或 mysql
+  type: sqlite
+  # MySQL 连接设置 (仅当 type 为 mysql 时生效)
+  host: localhost
+  port: 3306
+  name: boomman
+  username: root
+  password: ""
