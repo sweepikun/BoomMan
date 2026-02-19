@@ -1,24 +1,16 @@
-pluginModule=boomman
-
-modules {
-    java
-    spigot
+plugins {
+    `java-library`
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-spigot {
-    main = "cn.popcraft.boomman.BoomMan"
-    name = "BoomMan"
-    version = "1.0.0"
-    apiVersion = "1.17"
-    depend = listOf("CoreProtect")
-}
+group = "cn.popcraft"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
-    spigotmc()
-    jitpack()
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://repo.codemc.io/repository/maven-public/")
+    maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
+    maven { url = uri("https://repo.codemc.io/repository/maven-public/") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -37,4 +29,23 @@ java {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.release.set(17)
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.shadowJar {
+    archiveFileName.set("BoomMan-${version}.jar")
+    minimize {
+        exclude(dependency("org.spigotmc:spigot-api.*"))
+        exclude(dependency("net.coreprotect:coreprotect.*"))
+    }
+}
+
+tasks.register<Copy>("copyDeps") {
+    from(configurations.compileClasspath)
+    into("build/libs")
+    include("spigot-api*.jar")
+    include("coreprotect*.jar")
 }

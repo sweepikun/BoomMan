@@ -1,0 +1,12 @@
+name: BoomMan
+main: cn.popcraft.boomman.BoomMan
+version: 1.0.0
+api-version: 1.17
+author: BoomMan
+description: 卡顿区块自动重置插件
+depend: [CoreProtect]
+
+commands:
+  boomman:
+    description: BoomMan主命令
+    usage: /<command> [args]
