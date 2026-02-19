@@ -6,7 +6,7 @@ import cn.popcraft.boomman.coreprotect.CoreProtectHandler;
 import cn.popcraft.boomman.monitor.ChunkMonitor;
 import cn.popcraft.boomman.recorder.ResetRecorder;
 import cn.popcraft.boomman.task.MonitorTask;
-import org.bstats.bstats.BukkitMetrics;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BoomMan extends JavaPlugin {
@@ -67,8 +67,8 @@ public class BoomMan extends JavaPlugin {
             return;
         }
         try {
-            BukkitMetrics metrics = new BukkitMetrics(this, 23701);
-            metrics.addCustomChart(new BukkitMetrics.SimplePie("plugin_version", () -> getDescription().getVersion()));
+            Metrics metrics = new Metrics(this, 23701);
+            metrics.addCustomChart(new Metrics.SimplePie("plugin_version", () -> getDescription().getVersion()));
         } catch (Exception e) {
             getLogger().warning("BStats 统计初始化失败，已关闭统计功能");
         }

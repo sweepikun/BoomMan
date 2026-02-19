@@ -78,13 +78,17 @@ public class ChunkMonitor {
 
     private int getChunkTickTime(Chunk chunk) {
         try {
-            org.bukkit.craftbukkit.v1_17_R1.CraftWorld craftWorld = 
-                (org.bukkit.craftbukkit.v1_17_R1.CraftWorld) chunk.getWorld();
-            Object nmsChunkProvider = craftWorld.getHandle().getClass().getMethod("getChunkProvider").invoke(craftWorld.getHandle());
-            Object nmsChunk = nmsChunkProvider.getClass().getMethod("getChunkAt", int.class, int.class, boolean.class)
-                .invoke(nmsChunkProvider, chunk.getX(), chunk.getZ(), false);
+            World world = chunk.getWorld();
+            Class<?> craftWorldClass = world.getClass();
+            Object handle = craftWorldClass.getMethod("getHandle").invoke(world);
+            Object chunkProvider = handle.getClass().getMethod("getChunkProvider").invoke(handle);
+            Object nmsChunk = chunkProvider.getClass().getMethod("getChunkAt", int.class, int.class, boolean.class)
+                .invoke(chunkProvider, chunk.getX(), chunk.getZ(), false);
             if (nmsChunk != null) {
-                return (int) nmsChunk.getClass().getMethod("e").invoke(nmsChunk);
+                Object result = nmsChunk.getClass().getMethod("e").invoke(nmsChunk);
+                if (result instanceof Integer) {
+                    return (Integer) result;
+                }
             }
         } catch (Exception e) {
         }
