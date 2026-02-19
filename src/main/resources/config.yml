@@ -1,0 +1,45 @@
+# BoomMan 配置文件
+# 卡顿区块自动重置插件
+
+# 监控设置
+monitor:
+  # 是否启用监控
+  enabled: true
+  # 检查间隔 (tick), 20 tick = 1 秒
+  check-interval: 20
+
+# 卡顿阈值设置
+thresholds:
+  # 单个区块tick耗时超过此值 (毫秒) 触发重置
+  tick-time-ms: 20
+  # 实体数量超过此值触发重置
+  entity-count: 50
+  # 方块实体数量超过此值触发重置
+  tile-entity-count: 20
+  # 每个玩家允许的tick耗时 (毫秒)
+  tick-ms-per-player: 2
+
+# 重置设置
+reset:
+  # 是否启用自动重置
+  enabled: true
+  # 重置前警告秒数 (暂未实现)
+  before-reset-warning: 5
+  # 同一区块重置冷却时间 (秒), 防止频繁重置
+  cooldown-seconds: 60
+  # 排除的世界列表 (这些世界不会被监控)
+  exclude-worlds:
+    - world_nether
+    - world_the_end
+
+# CoreProtect 相关设置
+coreprotect:
+  # 是否在重置前自动保存快照 (用于恢复)
+  auto-snapshot: true
+  # 恢复操作超时时间 (秒)
+  restore-timeout: 300
+
+# BStats 统计设置
+bstats:
+  # 是否启用匿名统计 (帮助开发者改进插件)
+  enabled: true
