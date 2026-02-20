@@ -40,10 +40,10 @@ public class ConfigManager {
 
         this.monitorEnabled = config.getBoolean("monitor.enabled", true);
         this.checkInterval = config.getInt("monitor.check-interval", 20);
-        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 20);
-        this.entityCountThreshold = config.getInt("thresholds.entity-count", 50);
-        this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 20);
-        this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 2);
+        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 100);
+        this.entityCountThreshold = config.getInt("thresholds.entity-count", 300);
+        this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 100);
+        this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 5);
         this.resetEnabled = config.getBoolean("reset.enabled", true);
         this.beforeResetWarning = config.getInt("reset.before-reset-warning", 5);
         this.cooldownSeconds = config.getInt("reset.cooldown-seconds", 60);

@@ -11,13 +11,20 @@ monitor:
 # 卡顿阈值设置
 thresholds:
   # 单个区块tick耗时超过此值 (毫秒) 触发重置
-  tick-time-ms: 20
+  # 建议: 50ms以上，单个区块短暂高耗时是正常的
+  # 100ms = 占用2个tick时间，表示严重卡顿
+  tick-time-ms: 100
   # 实体数量超过此值触发重置
-  entity-count: 50
+  # 建议: 200以上，正常刷怪塔/农场可能有一两百实体
+  # 500+ 实体会显著影响性能
+  entity-count: 300
   # 方块实体数量超过此值触发重置
-  tile-entity-count: 20
+  # 建议: 100以上，大型仓库/自动农场可能有上百个方块实体
+  # 方块实体每tick需要处理，数量过多会卡服
+  tile-entity-count: 100
   # 每个玩家允许的tick耗时 (毫秒)
-  tick-ms-per-player: 2
+  # 用于动态调整阈值: 实际阈值 = 基础阈值 + 玩家数 * 此值
+  tick-ms-per-player: 5
 
 # 重置设置
 reset:
