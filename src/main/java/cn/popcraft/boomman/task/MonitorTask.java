@@ -38,13 +38,7 @@ public class MonitorTask {
                     List<ChunkMonitor.ChunkData> laggingChunks = chunkMonitor.checkAllChunks();
                     
                     for (ChunkMonitor.ChunkData chunkData : laggingChunks) {
-                        plugin.getLogger().info("检测到卡顿区块: " + chunkData.getWorldName() + 
-                            ", " + chunkData.getChunkX() + ", " + chunkData.getChunkZ() +
-                            ", tick: " + chunkData.getTickTime() + "ms" +
-                            ", 实体: " + chunkData.getEntityCount() +
-                            ", 方块实体: " + chunkData.getTileEntityCount());
-                        
-                        chunkMonitor.resetChunk(chunkData);
+                        chunkMonitor.handleLaggingChunk(chunkData);
                     }
                 } catch (Exception e) {
                     plugin.getLogger().warning("监控任务执行时发生错误: " + e.getMessage());

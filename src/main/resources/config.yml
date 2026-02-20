@@ -11,29 +11,29 @@ monitor:
 # 卡顿阈值设置
 thresholds:
   # 单个区块tick耗时超过此值 (毫秒) 触发重置
-  # 建议: 50ms以上，单个区块短暂高耗时是正常的
-  # 100ms = 占用2个tick时间，表示严重卡顿
-  tick-time-ms: 100
+  # 1 tick = 50ms，200ms = 占用4个tick，表示严重卡顿
+  # 建议: 普通服务器200-300，高性能服务器可降至150
+  tick-time-ms: 250
   # 实体数量超过此值触发重置
-  # 建议: 200以上，正常刷怪塔/农场可能有一两百实体
-  # 500+ 实体会显著影响性能
-  entity-count: 300
+  # 正常刷怪塔约100-200实体，严重卡顿通常500+
+  # 建议: 普通服务器500-800，低配服务器可降至400
+  entity-count: 600
   # 方块实体数量超过此值触发重置
-  # 建议: 100以上，大型仓库/自动农场可能有上百个方块实体
-  # 方块实体每tick需要处理，数量过多会卡服
-  tile-entity-count: 100
+  # 方块实体每tick需处理，大量方块实体会严重卡服
+  # 建议: 普通服务器200-300，技术服可适当提高
+  tile-entity-count: 250
   # 每个玩家允许的tick耗时 (毫秒)
   # 用于动态调整阈值: 实际阈值 = 基础阈值 + 玩家数 * 此值
-  tick-ms-per-player: 5
+  tick-ms-per-player: 10
 
 # 重置设置
 reset:
   # 是否启用自动重置
   enabled: true
-  # 重置前警告秒数 (暂未实现)
-  before-reset-warning: 5
+  # 重置前警告秒数 (玩家会收到标题和聊天警告)
+  before-reset-warning: 10
   # 同一区块重置冷却时间 (秒), 防止频繁重置
-  cooldown-seconds: 60
+  cooldown-seconds: 120
   # 排除的世界列表 (这些世界不会被监控)
   exclude-worlds:
     - world_nether

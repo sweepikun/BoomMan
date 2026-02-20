@@ -4,8 +4,11 @@ import cn.popcraft.boomman.BoomMan;
 import cn.popcraft.boomman.config.ConfigManager;
 import cn.popcraft.boomman.coreprotect.CoreProtectHandler;
 import cn.popcraft.boomman.recorder.ResetRecorder;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,7 @@ public class ChunkMonitor {
     private final CoreProtectHandler coreProtectHandler;
     private final ResetRecorder resetRecorder;
     private final ConcurrentHashMap<String, Long> cooldownMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> warningMap = new ConcurrentHashMap<>();
 
     public ChunkMonitor(BoomMan plugin) {
         this.plugin = plugin;
@@ -38,7 +42,8 @@ public class ChunkMonitor {
             for (Chunk chunk : chunks) {
                 ChunkData data = analyzeChunk(chunk);
                 if (data != null && isLagging(data)) {
-                    if (!isOnCooldown(world.getName(), chunk.getX(), chunk.getZ())) {
+                    String key = data.getKey();
+                    if (!isOnCooldown(key) && !hasPendingWarning(key)) {
                         laggingChunks.add(data);
                     }
                 }
@@ -108,8 +113,7 @@ public class ChunkMonitor {
         return false;
     }
 
-    private boolean isOnCooldown(String worldName, int chunkX, int chunkZ) {
-        String key = worldName + ":" + chunkX + ":" + chunkZ;
+    private boolean isOnCooldown(String key) {
         Long lastReset = cooldownMap.get(key);
         if (lastReset == null) {
             return false;
@@ -118,8 +122,58 @@ public class ChunkMonitor {
         return System.currentTimeMillis() - lastReset < cooldownMillis;
     }
 
+    private boolean hasPendingWarning(String key) {
+        Long warningTime = warningMap.get(key);
+        if (warningTime == null) {
+            return false;
+        }
+        long warningMillis = config.getBeforeResetWarning() * 1000L;
+        return System.currentTimeMillis() - warningTime < warningMillis;
+    }
+
+    public void handleLaggingChunk(ChunkData data) {
+        String key = data.getKey();
+        
+        if (!warningMap.containsKey(key)) {
+            sendWarning(data);
+            warningMap.put(key, System.currentTimeMillis());
+            plugin.getLogger().info("区块警告: " + data.getWorldName() + "," + data.getChunkX() + "," + data.getChunkZ());
+        } else {
+            Long warningTime = warningMap.get(key);
+            long elapsed = System.currentTimeMillis() - warningTime;
+            long warningMillis = config.getBeforeResetWarning() * 1000L;
+            
+            if (elapsed >= warningMillis) {
+                warningMap.remove(key);
+                resetChunk(data);
+            }
+        }
+    }
+
+    private void sendWarning(ChunkData data) {
+        World world = plugin.getServer().getWorld(data.getWorldName());
+        if (world == null) return;
+
+        int minX = data.getChunkX() * 16;
+        int maxX = minX + 15;
+        int minZ = data.getChunkZ() * 16;
+        int maxZ = minZ + 15;
+
+        String reason = buildReasonShort(data);
+        String warningMsg = "§c[BoomMan] 警告! 你所在的区块因 " + reason + " 将在 " + config.getBeforeResetWarning() + " 秒后重置!";
+
+        for (Player player : world.getPlayers()) {
+            Location loc = player.getLocation();
+            if (loc.getBlockX() >= minX && loc.getBlockX() <= maxX &&
+                loc.getBlockZ() >= minZ && loc.getBlockZ() <= maxZ) {
+                player.sendMessage(warningMsg);
+                player.sendTitle("§c区块即将重置!", "§e" + config.getBeforeResetWarning() + "秒后执行", 10, 70, 20);
+            }
+        }
+    }
+
     public void resetChunk(ChunkData data) {
-        String key = data.getWorldName() + ":" + data.getChunkX() + ":" + data.getChunkZ();
+        String key = data.getKey();
         
         World world = plugin.getServer().getWorld(data.getWorldName());
         if (world == null) {
@@ -129,16 +183,19 @@ public class ChunkMonitor {
 
         coreProtectHandler.teleportPlayersInChunk(world, data.getChunkX(), data.getChunkZ());
 
+        String reason = buildReason(data);
+        final String finalReason = reason;
+        
         coreProtectHandler.rollbackChunk(world, data.getChunkX(), data.getChunkZ()).thenAccept(success -> {
             if (success) {
                 cooldownMap.put(key, System.currentTimeMillis());
+                warningMap.remove(key);
                 
-                String reason = buildReason(data);
                 resetRecorder.recordReset(
                     data.getWorldName(),
                     data.getChunkX(),
                     data.getChunkZ(),
-                    reason,
+                    finalReason,
                     false
                 );
                 
@@ -174,6 +231,20 @@ public class ChunkMonitor {
             sb.append("方块实体:").append(data.getTileEntityCount()).append(";");
         }
         return sb.toString();
+    }
+
+    private String buildReasonShort(ChunkData data) {
+        List<String> reasons = new ArrayList<>();
+        if (data.getTickTime() > config.getTickTimeThreshold()) {
+            reasons.add("tick耗时过高");
+        }
+        if (data.getEntityCount() > config.getEntityCountThreshold()) {
+            reasons.add("实体过多");
+        }
+        if (data.getTileEntityCount() > config.getTileEntityCountThreshold()) {
+            reasons.add("方块实体过多");
+        }
+        return String.join("、", reasons);
     }
 
     public static class ChunkData {

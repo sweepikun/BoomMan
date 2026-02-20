@@ -40,13 +40,13 @@ public class ConfigManager {
 
         this.monitorEnabled = config.getBoolean("monitor.enabled", true);
         this.checkInterval = config.getInt("monitor.check-interval", 20);
-        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 100);
-        this.entityCountThreshold = config.getInt("thresholds.entity-count", 300);
-        this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 100);
-        this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 5);
+        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 250);
+        this.entityCountThreshold = config.getInt("thresholds.entity-count", 600);
+        this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 250);
+        this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 10);
         this.resetEnabled = config.getBoolean("reset.enabled", true);
-        this.beforeResetWarning = config.getInt("reset.before-reset-warning", 5);
-        this.cooldownSeconds = config.getInt("reset.cooldown-seconds", 60);
+        this.beforeResetWarning = config.getInt("reset.before-reset-warning", 10);
+        this.cooldownSeconds = config.getInt("reset.cooldown-seconds", 120);
         this.excludeWorlds = config.getStringList("reset.exclude-worlds");
         if (this.excludeWorlds == null) {
             this.excludeWorlds = new ArrayList<>();
