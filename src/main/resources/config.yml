@@ -29,7 +29,7 @@ thresholds:
 # 重置设置
 reset:
   # 是否启用自动重置 (true: 检测到卡顿自动重置, false: 仅记录不重置)
-  auto-reset: true
+  auto-reset: false
   # 是否自动传送区块内的玩家到出生点
   teleport-players: true
   # 重置前警告秒数 (玩家会收到标题和聊天警告)
