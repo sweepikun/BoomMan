@@ -134,6 +134,14 @@ public class ChunkMonitor {
     public void handleLaggingChunk(ChunkData data) {
         String key = data.getKey();
         
+        List<String> playerInfo = getPlayersInChunk(data);
+        logLaggingChunk(data, playerInfo);
+        
+        if (!config.isAutoReset()) {
+            warningMap.remove(key);
+            return;
+        }
+        
         if (!warningMap.containsKey(key)) {
             sendWarning(data);
             warningMap.put(key, System.currentTimeMillis());
@@ -148,6 +156,42 @@ public class ChunkMonitor {
                 resetChunk(data);
             }
         }
+    }
+
+    private List<String> getPlayersInChunk(ChunkData data) {
+        List<String> players = new ArrayList<>();
+        World world = plugin.getServer().getWorld(data.getWorldName());
+        if (world == null) return players;
+
+        int minX = data.getChunkX() * 16;
+        int maxX = minX + 15;
+        int minZ = data.getChunkZ() * 16;
+        int maxZ = minZ + 15;
+
+        for (Player player : world.getPlayers()) {
+            Location loc = player.getLocation();
+            if (loc.getBlockX() >= minX && loc.getBlockX() <= maxX &&
+                loc.getBlockZ() >= minZ && loc.getBlockZ() <= maxZ) {
+                players.add(player.getName() + ":" + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
+            }
+        }
+        return players;
+    }
+
+    private void logLaggingChunk(ChunkData data, List<String> players) {
+        StringBuilder log = new StringBuilder();
+        log.append("检测到卡顿区块: ").append(data.getWorldName())
+           .append(", chunk: ").append(data.getChunkX())
+           .append(", ").append(data.getChunkZ())
+           .append(", tick: ").append(data.getTickTime()).append("ms")
+           .append(", 实体: ").append(data.getEntityCount())
+           .append(", 方块实体: ").append(data.getTileEntityCount());
+        
+        if (!players.isEmpty()) {
+            log.append(", 玩家: ").append(String.join("; ", players));
+        }
+        
+        plugin.getLogger().info(log.toString());
     }
 
     private void sendWarning(ChunkData data) {
@@ -181,7 +225,9 @@ public class ChunkMonitor {
             return;
         }
 
-        coreProtectHandler.teleportPlayersInChunk(world, data.getChunkX(), data.getChunkZ());
+        if (config.isTeleportPlayers()) {
+            coreProtectHandler.teleportPlayersInChunk(world, data.getChunkX(), data.getChunkZ());
+        }
 
         String reason = buildReason(data);
         final String finalReason = reason;

@@ -18,6 +18,8 @@ public class ConfigManager {
     private int tileEntityCountThreshold;
     private int tickMsPerPlayer;
     private boolean resetEnabled;
+    private boolean autoReset;
+    private boolean teleportPlayers;
     private int beforeResetWarning;
     private int cooldownSeconds;
     private List<String> excludeWorlds;
@@ -45,6 +47,8 @@ public class ConfigManager {
         this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 250);
         this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 10);
         this.resetEnabled = config.getBoolean("reset.enabled", true);
+        this.autoReset = config.getBoolean("reset.auto-reset", true);
+        this.teleportPlayers = config.getBoolean("reset.teleport-players", true);
         this.beforeResetWarning = config.getInt("reset.before-reset-warning", 10);
         this.cooldownSeconds = config.getInt("reset.cooldown-seconds", 120);
         this.excludeWorlds = config.getStringList("reset.exclude-worlds");
@@ -93,6 +97,14 @@ public class ConfigManager {
 
     public boolean isResetEnabled() {
         return resetEnabled;
+    }
+
+    public boolean isAutoReset() {
+        return autoReset;
+    }
+
+    public boolean isTeleportPlayers() {
+        return teleportPlayers;
     }
 
     public int getBeforeResetWarning() {
