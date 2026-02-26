@@ -75,18 +75,27 @@ public class ChunkMonitor {
     private int getChunkTickTime(Chunk chunk) {
         try {
             World world = chunk.getWorld();
-            Class<?> craftWorldClass = world.getClass();
-            Object handle = craftWorldClass.getMethod("getHandle").invoke(world);
-            Object chunkProvider = handle.getClass().getMethod("getChunkProvider").invoke(handle);
-            Object nmsChunk = chunkProvider.getClass().getMethod("getChunkAt", int.class, int.class, boolean.class)
-                .invoke(chunkProvider, chunk.getX(), chunk.getZ(), false);
+            Object handle = world.getClass().getMethod("getHandle").invoke(world);
+            Object chunkProvider = handle.getClass().getMethod("getChunkProvider").get(handle);
+            Object nmsChunk = chunk.getClass().getMethod("getHandle").invoke(chunk);
             if (nmsChunk != null) {
-                Object result = nmsChunk.getClass().getMethod("e").invoke(nmsChunk);
-                if (result instanceof Integer) {
-                    return (Integer) result;
+                java.lang.reflect.Method eMethod = null;
+                for (java.lang.reflect.Method m : nmsChunk.getClass().getDeclaredMethods()) {
+                    if (m.getName().equals("e") && m.getParameterCount() == 0) {
+                        eMethod = m;
+                        break;
+                    }
+                }
+                if (eMethod != null) {
+                    eMethod.setAccessible(true);
+                    Object result = eMethod.invoke(nmsChunk);
+                    if (result instanceof Integer) {
+                        return (Integer) result;
+                    }
                 }
             }
         } catch (Exception e) {
+            plugin.getLogger().warning("获取区块tick耗时失败: " + e.getMessage());
         }
         return 0;
     }
