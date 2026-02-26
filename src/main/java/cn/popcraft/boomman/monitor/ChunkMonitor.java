@@ -4,7 +4,6 @@ import cn.popcraft.boomman.BoomMan;
 import cn.popcraft.boomman.config.ConfigManager;
 import cn.popcraft.boomman.coreprotect.CoreProtectHandler;
 import cn.popcraft.boomman.recorder.ResetRecorder;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -57,14 +56,7 @@ public class ChunkMonitor {
         try {
             int entityCount = chunk.getEntities().length;
             int tileEntityCount = chunk.getTileEntities().length;
-
             int tickTime = getChunkTickTime(chunk);
-
-            int playerCount = chunk.getWorld().getPlayers().size();
-            int expectedTickTime = playerCount * config.getTickMsPerPlayer();
-            if (tickTime < expectedTickTime) {
-                expectedTickTime = tickTime;
-            }
 
             return new ChunkData(
                 chunk.getWorld().getName(),
@@ -72,8 +64,7 @@ public class ChunkMonitor {
                 chunk.getZ(),
                 tickTime,
                 entityCount,
-                tileEntityCount,
-                expectedTickTime
+                tileEntityCount
             );
         } catch (Exception e) {
             plugin.getLogger().warning("分析区块时出错: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ());
@@ -300,17 +291,15 @@ public class ChunkMonitor {
         private final int tickTime;
         private final int entityCount;
         private final int tileEntityCount;
-        private final int expectedTickTime;
 
         public ChunkData(String worldName, int chunkX, int chunkZ, int tickTime, 
-                        int entityCount, int tileEntityCount, int expectedTickTime) {
+                        int entityCount, int tileEntityCount) {
             this.worldName = worldName;
             this.chunkX = chunkX;
             this.chunkZ = chunkZ;
             this.tickTime = tickTime;
             this.entityCount = entityCount;
             this.tileEntityCount = tileEntityCount;
-            this.expectedTickTime = expectedTickTime;
         }
 
         public String getWorldName() {
@@ -335,10 +324,6 @@ public class ChunkMonitor {
 
         public int getTileEntityCount() {
             return tileEntityCount;
-        }
-
-        public int getExpectedTickTime() {
-            return expectedTickTime;
         }
 
         public String getKey() {
