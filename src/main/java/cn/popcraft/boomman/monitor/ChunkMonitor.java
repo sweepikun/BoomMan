@@ -67,35 +67,29 @@ public class ChunkMonitor {
                 tileEntityCount
             );
         } catch (Exception e) {
-            plugin.getLogger().warning("分析区块时出错: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ());
+            plugin.getLogger().warning("分析区块时出错: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ() + " - " + e.getClass().getSimpleName() + ": " + e.getMessage());
             return null;
         }
     }
 
     private int getChunkTickTime(Chunk chunk) {
         try {
-            World world = chunk.getWorld();
-            Object handle = world.getClass().getMethod("getHandle").invoke(world);
-            Object chunkProvider = handle.getClass().getMethod("getChunkProvider").get(handle);
             Object nmsChunk = chunk.getClass().getMethod("getHandle").invoke(chunk);
-            if (nmsChunk != null) {
-                java.lang.reflect.Method eMethod = null;
-                for (java.lang.reflect.Method m : nmsChunk.getClass().getDeclaredMethods()) {
-                    if (m.getName().equals("e") && m.getParameterCount() == 0) {
-                        eMethod = m;
-                        break;
-                    }
-                }
-                if (eMethod != null) {
-                    eMethod.setAccessible(true);
-                    Object result = eMethod.invoke(nmsChunk);
+            if (nmsChunk == null) {
+                return 0;
+            }
+            
+            for (java.lang.reflect.Method m : nmsChunk.getClass().getDeclaredMethods()) {
+                if (m.getName().equals("e") && m.getParameterCount() == 0) {
+                    m.setAccessible(true);
+                    Object result = m.invoke(nmsChunk);
                     if (result instanceof Integer) {
                         return (Integer) result;
                     }
                 }
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("获取区块tick耗时失败: " + e.getMessage());
+            plugin.getLogger().warning("获取区块tick耗时失败: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ() + " - " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         return 0;
     }
