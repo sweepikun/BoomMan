@@ -56,13 +56,11 @@ public class ChunkMonitor {
         try {
             int entityCount = chunk.getEntities().length;
             int tileEntityCount = chunk.getTileEntities().length;
-            int tickTime = getChunkTickTime(chunk);
 
             return new ChunkData(
                 chunk.getWorld().getName(),
                 chunk.getX(),
                 chunk.getZ(),
-                tickTime,
                 entityCount,
                 tileEntityCount
             );
@@ -72,32 +70,7 @@ public class ChunkMonitor {
         }
     }
 
-    private int getChunkTickTime(Chunk chunk) {
-        try {
-            Object nmsChunk = chunk.getClass().getMethod("getHandle").invoke(chunk);
-            if (nmsChunk == null) {
-                return 0;
-            }
-            
-            for (java.lang.reflect.Method m : nmsChunk.getClass().getDeclaredMethods()) {
-                if (m.getName().equals("e") && m.getParameterCount() == 0) {
-                    m.setAccessible(true);
-                    Object result = m.invoke(nmsChunk);
-                    if (result instanceof Integer) {
-                        return (Integer) result;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            plugin.getLogger().warning("获取区块tick耗时失败: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ() + " - " + e.getClass().getSimpleName() + ": " + e.getMessage());
-        }
-        return 0;
-    }
-
     private boolean isLagging(ChunkData data) {
-        if (data.getTickTime() > config.getTickTimeThreshold()) {
-            return true;
-        }
         if (data.getEntityCount() > config.getEntityCountThreshold()) {
             return true;
         }
@@ -177,7 +150,6 @@ public class ChunkMonitor {
         log.append("检测到卡顿区块: ").append(data.getWorldName())
            .append(", chunk: ").append(data.getChunkX())
            .append(", ").append(data.getChunkZ())
-           .append(", tick: ").append(data.getTickTime()).append("ms")
            .append(", 实体: ").append(data.getEntityCount())
            .append(", 方块实体: ").append(data.getTileEntityCount());
         
@@ -261,9 +233,6 @@ public class ChunkMonitor {
 
     private String buildReason(ChunkData data) {
         StringBuilder sb = new StringBuilder();
-        if (data.getTickTime() > config.getTickTimeThreshold()) {
-            sb.append("tick耗时:").append(data.getTickTime()).append("ms;");
-        }
         if (data.getEntityCount() > config.getEntityCountThreshold()) {
             sb.append("实体:").append(data.getEntityCount()).append(";");
         }
@@ -275,9 +244,6 @@ public class ChunkMonitor {
 
     private String buildReasonShort(ChunkData data) {
         List<String> reasons = new ArrayList<>();
-        if (data.getTickTime() > config.getTickTimeThreshold()) {
-            reasons.add("tick耗时过高");
-        }
         if (data.getEntityCount() > config.getEntityCountThreshold()) {
             reasons.add("实体过多");
         }
@@ -291,16 +257,14 @@ public class ChunkMonitor {
         private final String worldName;
         private final int chunkX;
         private final int chunkZ;
-        private final int tickTime;
         private final int entityCount;
         private final int tileEntityCount;
 
-        public ChunkData(String worldName, int chunkX, int chunkZ, int tickTime, 
+        public ChunkData(String worldName, int chunkX, int chunkZ, 
                         int entityCount, int tileEntityCount) {
             this.worldName = worldName;
             this.chunkX = chunkX;
             this.chunkZ = chunkZ;
-            this.tickTime = tickTime;
             this.entityCount = entityCount;
             this.tileEntityCount = tileEntityCount;
         }
@@ -315,10 +279,6 @@ public class ChunkMonitor {
 
         public int getChunkZ() {
             return chunkZ;
-        }
-
-        public int getTickTime() {
-            return tickTime;
         }
 
         public int getEntityCount() {
