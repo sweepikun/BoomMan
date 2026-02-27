@@ -13,7 +13,6 @@ public class ConfigManager {
 
     private boolean monitorEnabled;
     private int checkInterval;
-    private int tickTimeThreshold;
     private int entityCountThreshold;
     private int tileEntityCountThreshold;
     private boolean resetEnabled;
@@ -31,6 +30,11 @@ public class ConfigManager {
     private String dbName;
     private String dbUsername;
     private String dbPassword;
+    private boolean redstoneMonitorEnabled;
+    private int redstoneCheckInterval;
+    private int redstoneThreshold;
+    private boolean sparkEnabled;
+    private int sparkMsptThreshold;
 
     public ConfigManager(BoomMan plugin) {
         this.plugin = plugin;
@@ -41,7 +45,6 @@ public class ConfigManager {
 
         this.monitorEnabled = config.getBoolean("monitor.enabled", true);
         this.checkInterval = config.getInt("monitor.check-interval", 20);
-        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 6000);
         this.entityCountThreshold = config.getInt("thresholds.entity-count", 600);
         this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 250);
         this.resetEnabled = config.getBoolean("reset.enabled", true);
@@ -63,6 +66,12 @@ public class ConfigManager {
         this.dbName = config.getString("database.name", "boomman");
         this.dbUsername = config.getString("database.username", "root");
         this.dbPassword = config.getString("database.password", "");
+        
+        this.redstoneMonitorEnabled = config.getBoolean("redstone.enabled", true);
+        this.redstoneCheckInterval = config.getInt("redstone.check-interval", 5);
+        this.redstoneThreshold = config.getInt("redstone.threshold", 100);
+        this.sparkEnabled = config.getBoolean("spark.enabled", true);
+        this.sparkMsptThreshold = config.getInt("spark.mspt-threshold", 50);
     }
 
     public FileConfiguration getConfig() {
@@ -75,10 +84,6 @@ public class ConfigManager {
 
     public int getCheckInterval() {
         return checkInterval;
-    }
-
-    public int getTickTimeThreshold() {
-        return tickTimeThreshold;
     }
 
     public int getEntityCountThreshold() {
@@ -147,6 +152,26 @@ public class ConfigManager {
 
     public String getDbPassword() {
         return dbPassword;
+    }
+
+    public boolean isRedstoneMonitorEnabled() {
+        return redstoneMonitorEnabled;
+    }
+
+    public int getRedstoneCheckInterval() {
+        return redstoneCheckInterval;
+    }
+
+    public int getRedstoneThreshold() {
+        return redstoneThreshold;
+    }
+
+    public boolean isSparkEnabled() {
+        return sparkEnabled;
+    }
+
+    public int getSparkMsptThreshold() {
+        return sparkMsptThreshold;
     }
 
     public void reloadConfig() {

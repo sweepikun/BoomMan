@@ -4,8 +4,11 @@ import cn.popcraft.boomman.command.BoomManCommand;
 import cn.popcraft.boomman.config.ConfigManager;
 import cn.popcraft.boomman.coreprotect.CoreProtectHandler;
 import cn.popcraft.boomman.monitor.ChunkMonitor;
+import cn.popcraft.boomman.monitor.RedstoneMonitor;
+import cn.popcraft.boomman.monitor.SparkMonitor;
 import cn.popcraft.boomman.recorder.ResetRecorder;
 import cn.popcraft.boomman.task.MonitorTask;
+import cn.popcraft.boomman.task.RedstoneTask;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,6 +21,9 @@ public class BoomMan extends JavaPlugin {
     private ChunkMonitor chunkMonitor;
     private ResetRecorder resetRecorder;
     private MonitorTask monitorTask;
+    private RedstoneMonitor redstoneMonitor;
+    private SparkMonitor sparkMonitor;
+    private RedstoneTask redstoneTask;
 
     @Override
     public void onEnable() {
@@ -45,6 +51,17 @@ public class BoomMan extends JavaPlugin {
             monitorTask.start();
         }
 
+        if (configManager.isRedstoneMonitorEnabled()) {
+            redstoneMonitor = new RedstoneMonitor(this);
+            getServer().getPluginManager().registerEvents(redstoneMonitor, this);
+            redstoneTask = new RedstoneTask(this);
+            redstoneTask.start();
+        }
+
+        if (configManager.isSparkEnabled()) {
+            sparkMonitor = new SparkMonitor(this);
+        }
+
         getServer().getPluginCommand("boomman").setExecutor(new BoomManCommand(this));
 
         initMetrics();
@@ -56,6 +73,12 @@ public class BoomMan extends JavaPlugin {
     public void onDisable() {
         if (monitorTask != null) {
             monitorTask.stop();
+        }
+        if (redstoneTask != null) {
+            redstoneTask.stop();
+        }
+        if (redstoneMonitor != null) {
+            redstoneMonitor.clear();
         }
         if (resetRecorder != null) {
             resetRecorder.close();
@@ -97,5 +120,13 @@ public class BoomMan extends JavaPlugin {
 
     public MonitorTask getMonitorTask() {
         return monitorTask;
+    }
+
+    public RedstoneMonitor getRedstoneMonitor() {
+        return redstoneMonitor;
+    }
+
+    public SparkMonitor getSparkMonitor() {
+        return sparkMonitor;
     }
 }
