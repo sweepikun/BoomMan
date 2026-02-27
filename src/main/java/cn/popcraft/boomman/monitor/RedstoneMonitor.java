@@ -50,13 +50,15 @@ public class RedstoneMonitor implements Listener {
             return;
         }
 
-        InventoryHolder holder = event.getInitiator();
-        if (holder instanceof org.bukkit.block.BlockState) {
-            org.bukkit.block.BlockState blockState = (org.bukkit.block.BlockState) holder;
-            Block block = blockState.getBlock();
-            String key = getBlockKey(block);
+        if (event.getInitiator() instanceof InventoryHolder) {
+            InventoryHolder holder = (InventoryHolder) event.getInitiator();
+            if (holder instanceof org.bukkit.block.BlockState) {
+                org.bukkit.block.BlockState blockState = (org.bukkit.block.BlockState) holder;
+                Block block = blockState.getBlock();
+                String key = getBlockKey(block);
 
-            hopperActivity.computeIfAbsent(key, k -> new AtomicInteger(0)).incrementAndGet();
+                hopperActivity.computeIfAbsent(key, k -> new AtomicInteger(0)).incrementAndGet();
+            }
         }
     }
 

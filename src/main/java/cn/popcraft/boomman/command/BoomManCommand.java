@@ -201,11 +201,10 @@ public class BoomManCommand implements CommandExecutor {
             sender.sendMessage("§c发现 " + laggingChunks.size() + " 个卡顿区块:");
             for (ChunkMonitor.ChunkData data : laggingChunks) {
                 sender.sendMessage(String.format(
-                    "§e%s, %d, %d §7- tick: %dms, 实体: %d, 方块实体: %d",
+                    "§e%s, %d, %d §7- 实体: %d, 方块实体: %d",
                     data.getWorldName(),
                     data.getChunkX(),
                     data.getChunkZ(),
-                    data.getTickTime(),
                     data.getEntityCount(),
                     data.getTileEntityCount()
                 ));
