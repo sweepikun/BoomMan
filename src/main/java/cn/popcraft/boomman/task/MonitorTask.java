@@ -47,7 +47,7 @@ public class MonitorTask {
         };
 
         long interval = config.getCheckInterval();
-        task.runTaskTimerAsynchronously(plugin, interval, interval);
+        task.runTaskTimer(plugin, interval, interval);
         
         plugin.getLogger().info("区块监控任务已启动! 检查间隔: " + interval + " tick");
     }
