@@ -56,18 +56,34 @@ public class ChunkMonitor {
         try {
             int entityCount = chunk.getEntities().length;
             int tileEntityCount = chunk.getTileEntities().length;
+            long inhabitedTime = chunk.getInhabitedTime();
 
             return new ChunkData(
                 chunk.getWorld().getName(),
                 chunk.getX(),
                 chunk.getZ(),
                 entityCount,
-                tileEntityCount
+                tileEntityCount,
+                inhabitedTime
             );
         } catch (Exception e) {
             plugin.getLogger().warning("分析区块时出错: " + chunk.getWorld().getName() + "," + chunk.getX() + "," + chunk.getZ() + " - " + e.getClass().getSimpleName() + ": " + e.getMessage());
             return null;
         }
+    }
+
+    private boolean isLagging(ChunkData data) {
+        if (data.getEntityCount() > config.getEntityCountThreshold()) {
+            return true;
+        }
+        if (data.getTileEntityCount() > config.getTileEntityCountThreshold()) {
+            return true;
+        }
+        if (data.getInhabitedTime() > config.getTickTimeThreshold()) {
+            return true;
+        }
+        return false;
+    }
     }
 
     private boolean isLagging(ChunkData data) {
@@ -150,6 +166,7 @@ public class ChunkMonitor {
         log.append("检测到卡顿区块: ").append(data.getWorldName())
            .append(", chunk: ").append(data.getChunkX())
            .append(", ").append(data.getChunkZ())
+           .append(", 居住时间: ").append(data.getInhabitedTime())
            .append(", 实体: ").append(data.getEntityCount())
            .append(", 方块实体: ").append(data.getTileEntityCount());
         
@@ -233,6 +250,9 @@ public class ChunkMonitor {
 
     private String buildReason(ChunkData data) {
         StringBuilder sb = new StringBuilder();
+        if (data.getInhabitedTime() > config.getTickTimeThreshold()) {
+            sb.append("居住时间:").append(data.getInhabitedTime()).append(";");
+        }
         if (data.getEntityCount() > config.getEntityCountThreshold()) {
             sb.append("实体:").append(data.getEntityCount()).append(";");
         }
@@ -244,6 +264,9 @@ public class ChunkMonitor {
 
     private String buildReasonShort(ChunkData data) {
         List<String> reasons = new ArrayList<>();
+        if (data.getInhabitedTime() > config.getTickTimeThreshold()) {
+            reasons.add("居住时间过长");
+        }
         if (data.getEntityCount() > config.getEntityCountThreshold()) {
             reasons.add("实体过多");
         }
@@ -259,14 +282,16 @@ public class ChunkMonitor {
         private final int chunkZ;
         private final int entityCount;
         private final int tileEntityCount;
+        private final long inhabitedTime;
 
         public ChunkData(String worldName, int chunkX, int chunkZ, 
-                        int entityCount, int tileEntityCount) {
+                        int entityCount, int tileEntityCount, long inhabitedTime) {
             this.worldName = worldName;
             this.chunkX = chunkX;
             this.chunkZ = chunkZ;
             this.entityCount = entityCount;
             this.tileEntityCount = tileEntityCount;
+            this.inhabitedTime = inhabitedTime;
         }
 
         public String getWorldName() {
@@ -287,6 +312,10 @@ public class ChunkMonitor {
 
         public int getTileEntityCount() {
             return tileEntityCount;
+        }
+
+        public long getInhabitedTime() {
+            return inhabitedTime;
         }
 
         public String getKey() {

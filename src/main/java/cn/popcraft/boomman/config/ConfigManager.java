@@ -16,7 +16,6 @@ public class ConfigManager {
     private int tickTimeThreshold;
     private int entityCountThreshold;
     private int tileEntityCountThreshold;
-    private int tickMsPerPlayer;
     private boolean resetEnabled;
     private boolean autoReset;
     private boolean teleportPlayers;
@@ -42,10 +41,9 @@ public class ConfigManager {
 
         this.monitorEnabled = config.getBoolean("monitor.enabled", true);
         this.checkInterval = config.getInt("monitor.check-interval", 20);
-        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 250);
+        this.tickTimeThreshold = config.getInt("thresholds.tick-time-ms", 6000);
         this.entityCountThreshold = config.getInt("thresholds.entity-count", 600);
         this.tileEntityCountThreshold = config.getInt("thresholds.tile-entity-count", 250);
-        this.tickMsPerPlayer = config.getInt("thresholds.tick-ms-per-player", 10);
         this.resetEnabled = config.getBoolean("reset.enabled", true);
         this.autoReset = config.getBoolean("reset.auto-reset", false);
         this.teleportPlayers = config.getBoolean("reset.teleport-players", true);
@@ -89,10 +87,6 @@ public class ConfigManager {
 
     public int getTileEntityCountThreshold() {
         return tileEntityCountThreshold;
-    }
-
-    public int getTickMsPerPlayer() {
-        return tickMsPerPlayer;
     }
 
     public boolean isResetEnabled() {
